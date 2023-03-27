@@ -11,14 +11,10 @@ output: github_document
 library(tidyverse) 
 library(broom)
 library(openintro)
-```
-
-
-```{r load-packages, message=FALSE}
-library(tidyverse) 
 library(tidymodels)
 library(openintro)
 ```
+
 
 ```{r}
 library(usethis)
@@ -26,19 +22,115 @@ use_git_config(user.name = "Lindsay Stall",
                user.email = "stallm21@wfu.edu")
 ```
 
-
 ### Exercise 1
+```{r}
+evals %>%
+  ggplot(mapping = aes(x=score)) + geom_histogram()
+```
 
-Remove this text, and add your answer for Exercise 1 here.
-Add code chunks as needed.
-Don't forget to label your code chunk.
-Do not use spaces in code chunk labels.
+Students rate courses generally higher so the graph is skewed. This is not that surprising though beccause I rarely rate professors 1-2 unless they are really bad.
 
 ### Exercise 2
+```{r}
+evals %>%
+  ggplot(mapping = aes(x=bty_avg, y=score)) + geom_point()
+```
+This doesn't look representative. There are less attractive professors who people still rated high, and attractive professors that got mediocre scores.
 
-...
+### Exercise 3
+```{r}
+evals %>%
+  ggplot(mapping = aes(x=bty_avg, y=score)) + geom_jitter()
+```
+This adds some variation to location of each point, so you can see points that were on top of each other. In the other plot, the graph only shows them each once. 
 
-Add exercise headings as needed.
+### Exercise 4
+```{r}
+m_bty <- lm(score ~ bty_avg, data=evals)
+print(m_bty)
+summary(m_bty)
+```
 
-## 
-For Exercise 12, relevel() function can be helpful! 
+### Exercise 5
+```{r}
+evals %>%
+  ggplot(mapping = aes(x=bty_avg, y=score)) + 
+  geom_point() + geom_jitter() + geom_smooth(method = lm, color = "orange", se = FALSE)
+```
+### Exercise 6
+The slope of the linear model is .06664, so for every point that the attractiveness rating of the professor goes up, their score increases by .06664.
+
+### Exercise 7
+The intercept is 3.88034, so when the attractiveness of the professor is rated 0, their score is a 3.88034. That makes sense with this data, the average score. 
+
+### Exercise 8
+The R squared of this model is .03502, meaning that 3.5% of the variance in score is determined by beauty rating.
+
+### Exercise 9
+
+```{r}
+m_gen <- lm(score ~ gender, data=evals)
+print(m_gen)
+summary(m_gen)
+```
+
+### Exercise 10
+
+for males, y = 4.09282 + (1 * .14151)
+females, y = 4.09282 + (0 * .14151)
+
+### Exercise 11
+```{r}
+m_rank <- lm(score ~ rank, data=evals)
+print(m_rank)
+summary(m_rank)
+```
+
+Teaching track, y = 4.28431 - 0
+Tenure track, y = 4.28431 - .1297
+Tenured, y = 4.28431 - .1452
+
+4.28431 is the professors score at level 0, teaching track
+-.1297 is how much a score decreases at the tenure track
+-.1452 is how much the score decreases if they are tenured
+
+### Exerise 12
+
+```{r}
+evals_rank_relevel <- evals %>%
+  mutate(rank_relevel = relevel(rank, ref = "tenure track"))
+```
+
+
+### Exercise 13
+
+```{r}
+m_rank_relevel <- lm(score ~ rank_relevel, data=evals_rank_relevel)
+summary(m_rank_relevel)
+```
+
+Y = 4.15463 + .12968x -.01550z
+4.1563 is what a professors score will be in the tenure track
+.12968 is how much a score will increase in teaching track
+-.01550 is how much a score will increase when tenureed
+R squared is .007332, implying that this new model explains .7% of the variance in score
+
+### Exercise 14
+```{r}
+evals <- evals %>%
+  mutate(tenure_eligible = recode(rank, "tenure track" = "yes", "tenured" = "yes", "teaching" = "no"))
+```
+
+
+### Exercise 15
+
+```{r}
+m_tenure_eligible <- lm(score ~ tenure_eligible, data=evals)
+summary(m_tenure_eligible)
+```
+
+
+y = 4.2843 - .1406x
+4.2843, the score for those who are not eligible for tenure
+.1406 is how much you decrease when they become eligible for tenure
+R squared is .00932, which means this explains .932% of the variation in the data
